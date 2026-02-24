@@ -541,9 +541,9 @@
             <div class="info-box">
                 <strong>テスト詳細：</strong><br>
                 • 問題数：10問（4択形式）<br>
-                • 制限時間：15分<br>
+                • 制限時間：3分<br>
                 • 採点：即座に採点され、各問の解説が表示されます<br>
-                • 難易度：実務レベル（ひっかけ問題を含む）
+                • 難易度：実務レベル
             </div>
 
             <!-- 名前入力フィールド -->
@@ -566,7 +566,7 @@
             <div class="timer-section">
                 <div class="timer-box">
                     <div class="timer-label">残り時間</div>
-                    <div class="timer" id="timer">15:00</div>
+                    <div class="timer" id="timer">03:00</div>
                 </div>
                 <div class="progress-bar">
                     <div class="progress-fill" id="progressFill"></div>
@@ -641,7 +641,7 @@
                 question: "MXレコード設定時に、複数のメールサーバーを指定する場合、優先度（プリファレンス値）の設定について、正しいのはどれですか？",
                 options: [
                     "数値が大きいほど優先度が高い",
-                    "数値が小さいほど優先度が高い（ひっかけ問題）",
+                    "数値が小さいほど優先度が高い",
                     "優先度は重要ではなく、ラウンドロビンで自動配分される",
                     "MXレコードは1つだけ設定できる"
                 ],
@@ -652,12 +652,12 @@
                 question: "SPFレコード設定で『v=spf1 ip4:192.0.2.1 ~all』と指定した場合、指定されたIP以外からのメール送信はどうなりますか？",
                 options: [
                     "完全にブロックされる",
-                    "ソフトフェイル（迷惑メール判定される可能性あり）",
+                    "ソフトフェール（迷惑メール判定される可能性あり）",
                     "完全に許可される",
                     "SPFチェックがスキップされる"
                 ],
                 correct: 1,
-                explanation: "『~all』はソフトフェイル（Softfail）を示します。完全ブロックは『-all』です。ソフトフェイルは迷惑メール判定される可能性がありますが、ブロックはされません。"
+                explanation: "『~all』はソフトフェール（Softfail）を示します。完全ブロックは『-all』です。ソフトフェールは迷惑メール判定される可能性がありますが、ブロックはされません。"
             },
             {
                 question: "DKIMの秘密鍵を誤って公開してしまった場合、最優先で行うべき対応はどれですか？",
@@ -696,7 +696,7 @@
                 question: "サーバー移管後、Webサイトの表示は正常だが、一部のユーザーに古いIPアドレスが返される場合、その原因として最も可能性が高いのは？",
                 options: [
                     "ファイアウォールの設定が間違っている",
-                    "DNSキャッシュがまだ全世界的に更新されていない（ひっかけ問題）",
+                    "DNSキャッシュがまだ全世界的に更新されていない",
                     "新しいサーバーのスペックが低い",
                     "CGIスクリプトが古いサーバーを参照している"
                 ],
@@ -729,7 +729,7 @@
                 question: "HTTPSリダイレクト設定後、ブラウザキャッシュが原因でHTTPでアクセス可能なままの場合、ユーザー側で最も効果的な対応は？",
                 options: [
                     "ブラウザを再インストールする",
-                    "ブラウザキャッシュをクリアし、Cookieも削除する（ひっかけ問題）",
+                    "ブラウザキャッシュをクリアし、Cookieも削除する",
                     "サーバー側でリダイレクト設定を再確認させる",
                     "異なるブラウザを使用する"
                 ],
@@ -741,12 +741,12 @@
         // グローバル変数
         let currentQuestionIndex = 0;
         let score = 0;
-        let timeRemaining = 900; // 15分（900秒）
+        let timeRemaining = 180; // 3分（180秒）
         let timerInterval = null;
         let testStarted = false;
         let candidateName = '';
         let isViewedFromUrl = false;
-        const TOTAL_TIME = 900; // 900秒
+        const TOTAL_TIME = 180; // 180秒
 
         // URLパラメータを解析
         function getUrlParams() {
