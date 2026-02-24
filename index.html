@@ -761,13 +761,66 @@
         function initializePage() {
             const params = getUrlParams();
 
-            // URLにパラメータがある場合、結果画面を直接表示
+            // URLにパラメータがある場合、結果画面を直接表示（管理者表示用）
             if (params.name && params.score !== null) {
                 isViewedFromUrl = true;
                 candidateName = decodeURIComponent(params.name);
                 score = parseInt(params.score);
                 showResultsFromUrl();
             }
+            // URLパラメータがない場合、localStorage で受験済みかチェック
+            else if (hasCompletedTest()) {
+                showAlreadyTakenScreen();
+            }
+        }
+
+        // 受験済みユーザー向けの画面を表示
+        function showAlreadyTakenScreen() {
+            const completion = getTestCompletion();
+
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('questionSection').classList.remove('active');
+            document.getElementById('resultSection').classList.add('active');
+
+            // 前回の結果を表示
+            document.getElementById('resultCandidateName').textContent = `受験者：${completion.name}`;
+            document.getElementById('finalScore').textContent = completion.score;
+            document.getElementById('restartBtn').style.display = 'none';
+
+            const percentage = Math.round((completion.score / 10) * 100);
+            let resultMessage = '';
+            let resultDetail = '';
+
+            if (percentage === 100) {
+                resultMessage = '満点です！🎉';
+                resultDetail = 'Webインフラの実務知識が非常に豊富です。素晴らしい成績です。';
+            } else if (percentage >= 80) {
+                resultMessage = '優秀です！';
+                resultDetail = 'Webインフラの実務経験が充分にあります。';
+            } else if (percentage >= 60) {
+                resultMessage = '良好です。';
+                resultDetail = 'Webインフラの基本知識があります。';
+            } else if (percentage >= 40) {
+                resultMessage = '今後の学習が必要です。';
+                resultDetail = 'Webインフラの実務経験を積むことをお勧めします。';
+            } else {
+                resultMessage = '学習を強化してください。';
+                resultDetail = 'DNS、メール認証、WordPressのトラブルシューティング知識の習得をお勧めします。';
+            }
+
+            document.getElementById('resultMessage').textContent = resultMessage;
+            document.getElementById('resultDetail').textContent = resultDetail;
+
+            // 通知メッセージを追加
+            const notice = document.getElementById('viewedFromUrlNotice');
+            notice.innerHTML = '<strong>⏸️ テストは既に完了しています</strong>前回の結果を表示しています。複数回の受験はできません。';
+            notice.style.display = 'block';
+
+            // 前回の報告用URLを再生成して表示
+            const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
+            const shareUrl = `${baseUrl}?name=${encodeURIComponent(completion.name)}&score=${completion.score}`;
+            document.getElementById('shareUrl').value = shareUrl;
+            document.getElementById('shareSection').style.display = 'block';
         }
 
         // URLから表示された結果画面を表示
@@ -824,6 +877,12 @@
 
         // テスト開始
         function startTest() {
+            // localStorage にテスト完了情報がある場合は、開始を禁止
+            if (hasCompletedTest()) {
+                alert('申し訳ございません。本テストは1人1回限りの実施となります。\n何かご不明な点がございましたら、採用担当者までお問い合わせください。');
+                return;
+            }
+
             candidateName = document.getElementById('candidateName').value.trim();
 
             if (!candidateName) {
@@ -835,6 +894,9 @@
             currentQuestionIndex = 0;
             score = 0;
             timeRemaining = TOTAL_TIME;
+
+            // 名前入力フィールドをロック
+            document.getElementById('candidateName').disabled = true;
 
             document.getElementById('startScreen').style.display = 'none';
             document.getElementById('questionSection').classList.add('active');
@@ -1008,7 +1070,32 @@
             // 報告用URLを生成（URLから表示された場合は非表示）
             if (!isViewedFromUrl) {
                 generateShareUrl();
+                // localStorage に受験完了情報を保存
+                saveTestCompletion(candidateName, score);
             }
+        }
+
+        // localStorage に受験完了情報を保存
+        function saveTestCompletion(name, scoreValue) {
+            const completionData = {
+                is_finished: true,
+                name: name,
+                score: scoreValue,
+                timestamp: new Date().toISOString()
+            };
+            localStorage.setItem('testCompletion', JSON.stringify(completionData));
+        }
+
+        // localStorage から受験完了情報を取得
+        function getTestCompletion() {
+            const data = localStorage.getItem('testCompletion');
+            return data ? JSON.parse(data) : null;
+        }
+
+        // 受験済みかどうかを確認
+        function hasCompletedTest() {
+            const completion = getTestCompletion();
+            return completion !== null && completion.is_finished === true;
         }
 
         // 報告用URL生成
@@ -1046,6 +1133,12 @@
 
         // テスト再スタート
         function restartTest() {
+            // localStorage にテスト完了情報がある場合は、再テストを禁止
+            if (hasCompletedTest()) {
+                alert('申し訳ございません。本テストは1人1回限りの実施となります。\n何かご不明な点がございましたら、採用担当者までお問い合わせください。');
+                return;
+            }
+
             currentQuestionIndex = 0;
             score = 0;
             timeRemaining = TOTAL_TIME;
@@ -1054,6 +1147,7 @@
             isViewedFromUrl = false;
 
             document.getElementById('candidateName').value = '';
+            document.getElementById('candidateName').disabled = false;
             document.getElementById('startBtn').disabled = true;
             document.getElementById('startScreen').style.display = 'block';
             document.getElementById('questionSection').classList.remove('active');
